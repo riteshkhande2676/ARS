@@ -21,12 +21,12 @@ A futuristic, AI-driven solar energy platform that transcends traditional brochu
 ## 2. Sitemap Strategy
 
 ### Public Zone
-1.  **Home (The Solarverse)** - 3D Hero, AI Quick-Quote, Impact counter.
+1.  **Home (The Solarverse)** - 3D Hero, Quick-Quote, Impact counter.
 2.  **Smart Solutions** - Residential, Commercial, Hybrid - with interactive 3D models.
 3.  **Solar Journey** - Interactive timeline of installation.
-4.  **The Lab (Blog)** - AI-curated news, tech deep dives.
+4.  **The Lab (Blog)** - Tech deep dives and news.
 5.  **About Nexus** - Mission, Team, Carbon offset tracker.
-6.  **Contact & Support** - Voice-enabled search, AI Chatbot.
+6.  **Contact & Support** - Live Chat.
 
 ### User Zone (Secured)
 1.  **Dashboard** - Real-time energy stats (mockup or API connected).
@@ -141,17 +141,17 @@ erDiagram
 
 ## 8. Admin Dashboard Features
 - **Live User Map:** Real-time view of active users on the site.
-- **AI Insights:** "Predicted detailed revenue for Q3 based on current leads."
+- **Revenue Analytics:** "Detailed revenue analysis for Q3 based on current leads."
 - **Content Studio:** Rich Text Editor for blog posts.
 - **Role Management:** Grant granular permissions.
 
 ---
 
-## 9. AI Features & Integrations
-1.  **Solar Bot 9000:**
-    - Uses RAG (Retrieval-Augmented Generation) to answer "What is the warranty on X panel?" by reading uploaded PDF docs.
-2.  **Voice Search:**
-    - "Show me solar panels under $500." -> Transcribes audio -> Queries DB filters.
+## 9. Future Integrations
+1.  **Custom Solar Calculator:**
+    - "Calculate your potential savings based on roof size and average bill."
+2.  **IoT Dashboard:**
+    - "Real-time monitoring of installed inverter metrics."
 3.  **Smart Recommendations:**
     - "Based on your location (Indore), we recommend Monocrystalline panels."
 
