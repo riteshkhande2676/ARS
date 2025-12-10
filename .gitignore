@@ -1,18 +1,18 @@
-# Logs and temporary files
+# Logs
 logs/
 *.log
 
-# Database credentials (sensitive)
-config/database.php
-
-# macOS
-.DS_Store
+# Java build artifacts
+target/
+*.class
 
 # IDE
 .vscode/
 .idea/
+*.iml
+.DS_Store
 
-# Temporary files
+# Temporary
 *.tmp
 *.swp
 *~

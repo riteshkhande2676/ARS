@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
             };
 
             // Send AJAX request
-            fetch('api/submit_contact.php', {
+            fetch('/api/contact', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

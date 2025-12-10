@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - ARS ENGINEERS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin/styles.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>🌞 ARS ENGINEERS - Admin Panel</h1>
+                <div class="header-stats">
+                    <div class="stat-badge">
+                        <span class="stat-label">Total Messages:</span>
+                        <span class="stat-value" id="totalMessages">0</span>
+                    </div>
+                    <div class="stat-badge unread">
+                        <span class="stat-label">Unread:</span>
+                        <span class="stat-value" id="unreadMessages">0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="panel-header">
+                <h2>Contact Messages</h2>
+                <button onclick="fetchMessages()" class="btn-refresh">🔄 Refresh</button>
+            </div>
+
+            <div id="loading" class="empty-state" style="display: none;">
+                <h3>Loading messages...</h3>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">📭</div>
+                <h3>No messages yet</h3>
+                <p>Customer messages will appear here when they contact you through the website.</p>
+            </div>
+
+            <div id="tableContainer" class="messages-table-container" style="display: none;">
+                <table class="messages-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="messagesBody">
+                        <!-- Messages will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="admin-footer">
+            <p>&copy; <span id="year"></span> ARS ENGINEERS. All rights reserved.</p>
+            <a href="/" class="btn-back">← Back to Website</a>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        document.addEventListener('DOMContentLoaded', fetchMessages);
+
+        // Poll every 30 seconds
+        setInterval(fetchMessages, 30000);
+
+        function fetchMessages() {
+            document.getElementById('loading').style.display = 'block';
+
+            fetch('/api/messages')
+                .then(response => response.json())
+                .then(messages => {
+                    document.getElementById('loading').style.display = 'none';
+                    renderMessages(messages);
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                    document.getElementById('loading').innerHTML = '<h3>Error loading messages</h3>';
+                });
+        }
+
+        function renderMessages(messages) {
+            const tbody = document.getElementById('messagesBody');
+            const tableContainer = document.getElementById('tableContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            // Update stats
+            document.getElementById('totalMessages').textContent = messages.length;
+            const unreadCount = messages.filter(m => !m.read).length; // Note: Java field is isRead, causing JSON to be "read" or "isRead" dependent on Jackson. Lombok @Data usually generates getRead/isRead. JSON field usually 'read' for boolean isRead. Wait, standard getter for boolean is isRead(), Jackson serializes as 'read' if primitive boolean, or 'read' if wrapper Boolean logic applies. Actually for boolean primitive 'isRead', getter 'isRead()', property name 'read'.
+            // Let's check Java class: private boolean isRead = false; Lombok generates isRead(). Jackson sees isRead() and maps to JSON field "read".
+            document.getElementById('unreadMessages').textContent = unreadCount;
+
+            if (messages.length === 0) {
+                tableContainer.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            tableContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+            tbody.innerHTML = '';
+
+            messages.forEach(msg => {
+                const tr = document.createElement('tr');
+                tr.className = msg.read ? 'read' : 'unread';
+
+                const date = new Date(msg.createdAt);
+                const formattedDate = date.toLocaleDateString() + ' <span class="time">' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</span>';
+
+                tr.innerHTML = `
+                    <td>${msg.id}</td>
+                    <td class="date-cell">${formattedDate}</td>
+                    <td class="name-cell">${escapeHtml(msg.name)}</td>
+                    <td class="email-cell"><a href="mailto:${escapeHtml(msg.email)}">${escapeHtml(msg.email)}</a></td>
+                    <td class="phone-cell"><a href="tel:${escapeHtml(msg.phone)}">📞 ${escapeHtml(msg.phone)}</a></td>
+                    <td>${escapeHtml(msg.subject || '-')}</td>
+                    <td class="message-cell">
+                        <div class="message-preview">${escapeHtml(msg.message).substring(0, 100)}${msg.message.length > 100 ? '...' : ''}</div>
+                        <div class="message-full" style="display: none;">${escapeHtml(msg.message)}</div>
+                        ${msg.message.length > 100 ? '<button class="btn-expand" onclick="toggleMessage(this)">Read More</button>' : ''}
+                    </td>
+                    <td>
+                        <span class="status-badge ${msg.read ? 'read' : 'unread'}">${msg.read ? 'Read' : 'New'}</span>
+                    </td>
+                    <td class="actions-cell">
+                        ${!msg.read ? `<button class="btn-action btn-mark-read" onclick="markAsRead(${msg.id})" title="Mark as Read">✓</button>` : ''}
+                        <button class="btn-action btn-delete" onclick="deleteMessage(${msg.id})" title="Delete">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleMessage(btn) {
+            const cell = btn.closest('.message-cell');
+            const preview = cell.querySelector('.message-preview');
+            const full = cell.querySelector('.message-full');
+
+            if (full.style.display === 'none') {
+                preview.style.display = 'none';
+                full.style.display = 'block';
+                btn.textContent = 'Show Less';
+            } else {
+                preview.style.display = 'block';
+                full.style.display = 'none';
+                btn.textContent = 'Read More';
+            }
+        }
+
+        function markAsRead(id) {
+            fetch(`/api/messages/${id}/read`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) fetchMessages();
+                });
+        }
+
+        function deleteMessage(id) {
+            if (!confirm('Are you sure?')) return;
+            fetch(`/api/messages/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) fetchMessages();
+                });
+        }
+    </script>
+</body>
+
+</html>
